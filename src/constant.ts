@@ -1,0 +1,5 @@
+export const KAFKA_OPTIONS = Symbol('KAFKA')
+export const KAFKA_CONSUMER = Symbol('KAFKA_CONSUMER')
+export const KAFKA_CONSUME = Symbol('KAFKA_CONSUME')
+export const MESSAGE_ARGUMENT_INDEX = Symbol('MESSAGE_ARGUMENT_INDEX')
+export const CONTEXT_ARGUMENT_INDEX = Symbol('CONTEXT_ARGUMENT_INDEX')

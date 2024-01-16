@@ -1,0 +1,6 @@
+export * from './decorator'
+export * from './interface'
+export * from './kafka-consumer.service'
+export * from './kafka-producer.service'
+export * from './kafka.module'
+export * from './kafka.service'
