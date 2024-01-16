@@ -1,5 +1,13 @@
 # @buka/nestjs-kafka
 
+[npm]: https://www.npmjs.com/package/@buka/nestjs-kafka
+
+[![version](https://img.shields.io/npm/v/@buka/nestjs-kafka.svg?logo=npm&style=for-the-badge)][npm]
+[![downloads](https://img.shields.io/npm/dm/@buka/nestjs-kafka.svg?logo=npm&style=for-the-badge)][npm]
+[![dependencies](https://img.shields.io/librariesio/release/npm/@buka/nestjs-kafka?logo=npm&style=for-the-badge)][npm]
+[![license](https://img.shields.io/npm/l/@buka/nestjs-kafka.svg?logo=github&style=for-the-badge)][npm]
+[![Codecov](https://img.shields.io/codecov/c/gh/buka-lnc/npm.nestjs-kafka?logo=codecov&token=PLF0DT6869&style=for-the-badge)](https://codecov.io/gh/buka-lnc/npm.nestjs-kafka)
+
 This is a nestJS module implemented using KafkaJS.
 That support multiple connections and fits the coding style of nestjs.
 
