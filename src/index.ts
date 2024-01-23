@@ -1,3 +1,4 @@
+export { Partitioners } from 'kafkajs'
 export * from './decorator'
 export * from './interface'
 export * from './kafka-consumer.service'

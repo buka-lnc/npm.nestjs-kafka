@@ -1,14 +1,18 @@
 import { OnModuleDestroy, OnModuleInit } from '@nestjs/common'
-import { Producer } from 'kafkajs'
+import { Producer, ProducerRecord, RecordMetadata } from 'kafkajs'
+import { KafkaModuleForProducerOptions } from './interface/kafka-module-for-producer.interface.js'
 import { KafkaService } from './kafka.service'
 
 
-export class KafkaProducerService implements OnModuleInit, OnModuleDestroy {
+export class KafkaProducer implements OnModuleInit, OnModuleDestroy {
   producer!: Producer
-  constructor(private readonly kafka: KafkaService) {}
+  constructor(
+    private readonly options: KafkaModuleForProducerOptions,
+    private readonly kafka: KafkaService
+  ) {}
 
   async onModuleInit(): Promise<void> {
-    this.producer = this.kafka.producer()
+    this.producer = this.kafka.producer(this.options)
     await this.producer.connect()
   }
 
@@ -16,13 +20,7 @@ export class KafkaProducerService implements OnModuleInit, OnModuleDestroy {
     await this.producer.disconnect()
   }
 
-  async send(topic: string, message: string): Promise<any> {
-    const producer = this.kafka.producer()
-    await producer.connect()
-    await producer.send({
-      topic,
-      messages: [{ value: message }],
-    })
-    await producer.disconnect()
+  send(record: ProducerRecord): Promise<RecordMetadata[]> {
+    return this.producer.send(record)
   }
 }

@@ -4,9 +4,11 @@ import {
   KafkaModuleOptions,
   KafkaModuleOptionsAsync,
 } from './interface'
+import { KafkaModuleForProducerOptions } from './interface/kafka-module-for-producer.interface.js'
 import { KafkaConsumerService } from './kafka-consumer.service'
-import { KafkaProducerService } from './kafka-producer.service'
+import { KafkaProducer } from './kafka-producer.service'
 import { KafkaService } from './kafka.service'
+import { getForProducerOptionsProvideName } from './utils/get-for-producer-options-provide-name.js'
 import { getKafkaConsumerServiceProvideName } from './utils/get-kafka-consumer-service-provide-name'
 import { getKafkaProducerServiceProvideName } from './utils/get-kafka-producer-service-provide-name'
 import { getKafkaServiceProvideName } from './utils/get-kafka-service-provide-name'
@@ -19,7 +21,6 @@ export class KafkaModule {
   private static getProviders(name?: string): FactoryProvider[] {
     const optionsProvideName = getOptionsProvideName(name)
     const kafkaServiceProvideName = getKafkaServiceProvideName(name)
-    const kafkaProducerServiceProvideName = getKafkaProducerServiceProvideName(name)
     const kafkaConsumerServiceProvideName = getKafkaConsumerServiceProvideName(name)
 
     return [
@@ -27,11 +28,6 @@ export class KafkaModule {
         provide: kafkaServiceProvideName,
         inject: [optionsProvideName],
         useFactory: (opts) => new KafkaService(opts),
-      },
-      {
-        provide: kafkaProducerServiceProvideName,
-        inject: [kafkaServiceProvideName],
-        useFactory: (kafkaService) => new KafkaProducerService(kafkaService),
       },
       {
         provide: kafkaConsumerServiceProvideName,
@@ -87,6 +83,29 @@ export class KafkaModule {
         ...providers,
       ],
       exports: providers.map((item) => item.provide),
+    }
+  }
+
+  static forProducer(options?: KafkaModuleForProducerOptions): DynamicModule {
+    const kafkaForProducerOptionsProvideName = getForProducerOptionsProvideName(options?.name)
+    const kafkaServiceProvideName = getKafkaServiceProvideName(options?.name)
+    const kafkaProducerServiceProvideName = getKafkaProducerServiceProvideName(options?.name)
+
+    return {
+      global: true,
+      module: KafkaModule,
+      providers: [
+        {
+          provide: kafkaForProducerOptionsProvideName,
+          useValue: options,
+        },
+        {
+          provide: kafkaProducerServiceProvideName,
+          inject: [kafkaForProducerOptionsProvideName, kafkaServiceProvideName],
+          useFactory: (options, kafkaService) => new KafkaProducer(options, kafkaService),
+        },
+      ],
+      exports: [kafkaProducerServiceProvideName],
     }
   }
 }

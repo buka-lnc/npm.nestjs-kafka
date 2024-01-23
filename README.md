@@ -13,7 +13,7 @@ That support multiple connections and fits the coding style of nestjs.
 
 ## Usage
 
-Import `KafkaModule`:
+Import `KafkaModule.forRoot` to `AppModule`:
 
 ```typescript
 // app.module.js
@@ -33,7 +33,9 @@ import { KafkaModule } from "@buka/nestjs-kafka";
 export class AppModule {}
 ```
 
-Add a provider named `AppConsumer` that consume message：
+### KafkaConsumer
+
+Create a provider named `AppConsumer` that consume messages：
 
 ```typescript
 // app.consumer.js
@@ -56,7 +58,9 @@ export class AppConsumer {
 }
 ```
 
-Append `AppConsumer` to `AppModule`:
+> `AppConsumer` and `AppService` can be merged into one provider, but writing them separately will make the code clearer.
+
+Then, append `AppConsumer` to `AppModule`:
 
 ```typescript
 import { Module } from "@nestjs/common";
@@ -69,4 +73,97 @@ import { AppConsumer } from "./app.consumer";
   providers: [AppConsumer],
 })
 export class AppModule {}
+```
+
+### KafkaProducer
+
+`KafkaProducer` will connect on module init and disconnect on module destroy.
+To use this, import `KafkaModule.forProducer(options)` to `AppModule`:
+
+```typescript
+// app.module.js
+import { Module } from "@nestjs/common";
+import { KafkaModule, Partitioners } from "@buka/nestjs-kafka";
+import AppService from "./app.service";
+
+@Module({
+  imports: [
+    KafkaModule.forRoot({
+      name: "my-kafka",
+      groupId: "my-group-id",
+      clientId: "my-client-id",
+      brokers: ["my_kafka_host:9092"],
+    }),
+    KafkaModule.forProducer({
+      name: "my-kafka",
+      createPartitioner: Partitioners.LegacyPartitioner,
+    }),
+  ],
+  provider: [AppService],
+})
+export class AppModule {}
+```
+
+> The `options` of `.forProducer` is exactly the same as [the `options` of `kafka.producer` in KafkaJS](https://kafka.js.org/docs/producing)。
+
+Inject `KafkaProducer` to your `AppService`:
+
+```typescript
+// app.service.js
+@Injectable()
+export class AppService {
+  constructor(
+    @InjectKafkaProducer('my-kafka')
+    private readonly producer: KafkaProducer
+  ) {}
+
+  async sendMessage() {
+    this.producer.send({
+      topic: 'kafka-topic'
+      messages: [{ value: 'Hello Kafka' }]
+    })
+  }
+}
+```
+
+The `.send` function of `KafkaProducer` is exactly the same as [the `.send` function of KafkaJS](https://kafka.js.org/docs/producing#producing-messages)。
+
+### KafkaService
+
+Using the `KafkaService`, you can create `consumer` and `producer` like plain KafkaJS.
+
+```typescript
+// app.service.js
+import { OnModuleDestroy, OnModuleInit } from "@nestjs/common";
+import { Producer, ProducerRecord, RecordMetadata } from "kafkajs";
+import { KafkaService } from "@buka/nestjs-kafka";
+
+@Injectable()
+export class AppService implements OnModuleInit, OnModuleDestroy {
+  producer!: Producer;
+  consumer!: Consumer;
+
+  constructor(private readonly kafka: KafkaService) {}
+
+  async onModuleInit(): Promise<void> {
+    this.producer = this.kafka.producer();
+    await this.producer.connect();
+
+    this.consumer = this.kafka.consumer({
+      groupId: "my-group-id",
+    });
+
+    this.consumer.subscribe({ topic: "kafka-topic" });
+    this.consumer.run({
+      eachMessage: async (context) => {
+        // do somethings
+      },
+    });
+  }
+
+  async onModuleDestroy(): Promise<void> {
+    await this.producer.disconnect();
+    await this.consumer.disconnect();
+  }
+}
 ```

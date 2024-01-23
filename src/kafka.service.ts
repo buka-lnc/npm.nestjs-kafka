@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common'
-import { Consumer, ConsumerConfig, Kafka, Producer, logLevel } from 'kafkajs'
+import { Consumer, ConsumerConfig, Kafka, Producer, ProducerConfig, logLevel } from 'kafkajs'
 import { KafkaModuleOptions } from './interface/kafka-module-options.interface'
 
 @Injectable()
@@ -24,8 +24,8 @@ export class KafkaService {
     })
   }
 
-  producer(): Producer {
-    return this.kafka.producer()
+  producer(config?: ProducerConfig): Producer {
+    return this.kafka.producer(config)
   }
 
   consumer(config: ConsumerConfig): Consumer {
