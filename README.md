@@ -167,3 +167,65 @@ export class AppService implements OnModuleInit, OnModuleDestroy {
   }
 }
 ```
+
+## Q&A
+
+### `KafkaConsumer` not working with `CreateRequestContext` of `mikro-orm`
+
+If you don't pay attention to the order of `CreateRequestContext` decorators,
+you may have problems with any of other method decorators, not only `@buka/nestjs-kafka`.
+
+```typescript
+import { Injectable } from "@nestjs/common";
+import { KafkaConsumer, KafkaConsume, KafkaMessage } from "@buka/nestjs-kafka";
+import { CreateRequestContext } from "@mikro-orm/mysql";
+
+// app.consumer.js
+@Injectable()
+@KafkaConsumer()
+export class AppConsumer {
+  @CreateRequestContext()
+  // !! KafkaConsume decorator will not work !!
+  @KafkaConsume("my-topic")
+  async finishTask(@KafkaMessage() message: string): Promise<void> {
+    console.log(message);
+  }
+}
+```
+
+There are two solutions:
+
+1. [recommend] written as two functions:
+
+   ```typescript
+   @Injectable()
+   @KafkaConsumer()
+   export class AppConsumer {
+     @KafkaConsume("my-topic")
+     async consumeMessage(@KafkaMessage() message: string): Promise<void> {
+       // ... filter and format message
+       this.finishTask(JSON.parse(message))
+     }
+
+     @CreateRequestContext()
+     async finishTask(task: Task): Promise<void> {
+       // do something
+       console.log(task);
+     }
+   ```
+
+1. Pay attention to the order of `CreateRequestContext`:
+
+   ```typescript
+   @Injectable()
+   @KafkaConsumer()
+   export class AppConsumer {
+     @KafkaConsume("my-topic")
+     // use CreateRequestContext as the last decorator
+     @CreateRequestContext()
+     async finishTask(@KafkaMessage() message: string): Promise<void> {
+       // do something
+       console.log(message);
+     }
+   }
+   ```
