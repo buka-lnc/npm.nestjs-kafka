@@ -1,4 +1,5 @@
 export interface KafkaConsumeMetadata {
-  topic: string
+  topics: (string | RegExp)[]
   json?: boolean
+  fromBeginning?: boolean
 }

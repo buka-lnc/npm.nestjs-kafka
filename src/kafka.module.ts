@@ -8,6 +8,7 @@ import { KafkaModuleForProducerOptions } from './interface/kafka-module-for-prod
 import { KafkaConsumerService } from './kafka-consumer.service'
 import { KafkaProducer } from './kafka-producer.service'
 import { KafkaService } from './kafka.service'
+import { getAsyncOptionsProvideName } from './utils/get-async-options-provide-name.js'
 import { getForProducerOptionsProvideName } from './utils/get-for-producer-options-provide-name.js'
 import { getKafkaConsumerServiceProvideName } from './utils/get-kafka-consumer-service-provide-name'
 import { getKafkaProducerServiceProvideName } from './utils/get-kafka-producer-service-provide-name'
@@ -65,13 +66,36 @@ export class KafkaModule {
   }
 
   static forRootAsync(options: KafkaModuleOptionsAsync): DynamicModule {
+    const asyncOptionsProvideName = getAsyncOptionsProvideName(options.name)
     const optionsProvideName = getOptionsProvideName(options.name)
     const providers = this.getProviders(options.name)
 
+    let asyncOptionsProvide: Provider
+
+    if (options.useFactory) {
+      asyncOptionsProvide = {
+        provide: asyncOptionsProvideName,
+        inject: options.inject,
+        useFactory: options.useFactory,
+      }
+    } else if (options.useClass) {
+      asyncOptionsProvide = {
+        provide: asyncOptionsProvideName,
+        useClass: options.useClass,
+      }
+    } else if (options.useExisting) {
+      asyncOptionsProvide = {
+        provide: asyncOptionsProvideName,
+        useExisting: options.useExisting,
+      }
+    } else {
+      throw new Error('Invalid KafkaModuleOptionsAsync: useClass, useExisting or useFactory must be defined')
+    }
+
     const optionsProvide: Provider = {
+      inject: [asyncOptionsProvideName],
       provide: optionsProvideName,
-      inject: options.inject,
-      useFactory: options.useFactory,
+      useFactory: (o: KafkaModuleOptions): KafkaModuleOptions => ({ name: options.name, ...o }),
     }
 
     return {
@@ -79,6 +103,7 @@ export class KafkaModule {
       module: KafkaModule,
       imports: [DiscoveryModule],
       providers: [
+        asyncOptionsProvide,
         optionsProvide,
         ...providers,
       ],

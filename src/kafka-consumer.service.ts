@@ -1,4 +1,4 @@
-import { OnModuleDestroy, OnModuleInit } from '@nestjs/common'
+import { Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common'
 import { DiscoveryService, MetadataScanner, Reflector } from '@nestjs/core'
 import { InstanceWrapper } from '@nestjs/core/injector/instance-wrapper'
 import { Consumer } from 'kafkajs'
@@ -9,6 +9,8 @@ import { KafkaConsumerMetadata } from './interface/kafka-consumer-metadata.inter
 import { KafkaService } from './kafka.service'
 
 export class KafkaConsumerService implements OnModuleInit, OnModuleDestroy {
+  logger = new Logger(KafkaConsumerService.name)
+
   consumers: Consumer[] = []
   subscriber: Record<string, KafkaConsumeOptions> = {}
 
@@ -28,7 +30,7 @@ export class KafkaConsumerService implements OnModuleInit, OnModuleDestroy {
   }
 
   async onModuleInit(): Promise<void> {
-    this.kafka.consumer({ groupId: 'test' })
+    this.kafka.consumer({ groupId: this.options.groupId })
 
     const providers = this.discoveryService.getProviders()
       .filter((provider) => {
@@ -56,7 +58,8 @@ export class KafkaConsumerService implements OnModuleInit, OnModuleDestroy {
       for (const method of methods) {
         const options = this.reflector.get<KafkaConsumeMetadata>(KAFKA_CONSUME, instance[method])
 
-        await consumer.subscribe({ topic: options.topic })
+        await consumer.subscribe({ topics: options.topics })
+        this.logger.log(`Subscribe ${options.topics.join(',')}`)
 
         const messageIndex = this.reflector.get(MESSAGE_ARGUMENT_INDEX, instance[method])
         const contextIndex = this.reflector.get(CONTEXT_ARGUMENT_INDEX, instance[method])
