@@ -59,7 +59,7 @@ export class KafkaConsumerService implements OnModuleInit, OnModuleDestroy {
         const options = this.reflector.get<KafkaConsumeMetadata>(KAFKA_CONSUME, instance[method])
 
         await consumer.subscribe({ topics: options.topics })
-        this.logger.log(`Subscribe ${options.topics.join(',')}`)
+        this.logger.log(`Subscribe topics ${options.topics.join(',')}`)
 
         const messageIndex = this.reflector.get(MESSAGE_ARGUMENT_INDEX, instance[method])
         const contextIndex = this.reflector.get(CONTEXT_ARGUMENT_INDEX, instance[method])
