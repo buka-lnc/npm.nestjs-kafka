@@ -8,6 +8,8 @@
 [![license](https://img.shields.io/npm/l/@buka/nestjs-kafka.svg?logo=github&style=for-the-badge)][npm]
 [![Codecov](https://img.shields.io/codecov/c/gh/buka-lnc/npm.nestjs-kafka?logo=codecov&token=PLF0DT6869&style=for-the-badge)](https://codecov.io/gh/buka-lnc/npm.nestjs-kafka)
 
+**Warning!!! This packages had be deprecated. Nestjs microservice has fully implemented this function. There is no reason to maintain this package.**
+
 This is a nestJS module implemented using KafkaJS.
 That support multiple connections and fits the coding style of nestjs.
 
