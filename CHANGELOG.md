@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.1.2](https://github.com/buka-lnc/npm.nestjs-kafka/compare/v1.1.1...v1.1.2) (2024-04-20)
+
+
+### Bug Fixes
+
+* deprecate package ([e1c7629](https://github.com/buka-lnc/npm.nestjs-kafka/commit/e1c7629c993a22d9fa1bc4791ad15bec95bb263f))
+
 ## [1.1.1](https://github.com/buka-lnc/npm.nestjs-kafka/compare/v1.1.0...v1.1.1) (2024-01-28)
 
 
